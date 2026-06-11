@@ -13,7 +13,7 @@ set -e
 # --- Input Validation ---
 # Check if the correct number of arguments (2) is provided.
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <new_version_rpm_url> <previous_version_rpm_url>"
+    echo "Usage: $0 <new_tomcat-src-rpm-link> <previous_tomcat-src-rpm-link>"
     exit 1
 fi
 
