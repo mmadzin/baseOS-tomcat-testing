@@ -10,11 +10,11 @@ if [[ -n "$1" && "$1" != "tomcat9" ]]; then
     exit 1
 fi
 
-TOMCAT_PACKAGE="${1:-$MY_VAR}"
+TOMCAT_PACKAGE="${1:-$TOMCAT_PACKAGE}"
 
-dnf install -y $TOMCAT_PACKAGE
+dnf install -y ${TOMCAT_PACKAGE}
 
-mkdir /usr/share/tomcat/webapps/ROOT
+mkdir -p /usr/share/tomcat/webapps/ROOT
 echo "Hi M!" > /usr/share/tomcat/webapps/ROOT/index.html
 
 systemctl start tomcat
@@ -61,17 +61,28 @@ rm -f "$RESPONSE_FILE"
 
 # --- CONFIGURATION ---
 # Path to your Tomcat log file
-LOG_FILE="/var/log/tomcat/catalina*.log"
+LOG_FILE_PATTERN="/var/log/tomcat/catalina*.log"
 
 # Patterns to search for (WARNING and SEVERE are standard Tomcat levels)
 SEARCH_PATTERNS="WARNING|SEVERE|ERROR"
 # ---------------------
 
-# 1. Check if the log file actually exists
-if [ ! -f "$LOG_FILE" ]; then
-    echo "ERROR: Tomcat log file not found at $LOG_FILE"
+# 1. Expand the wildcard into an array
+FILES=($LOG_FILE_PATTERN)
+FILE_COUNT=${#FILES[@]}
+
+# Check if only one log file exists
+if [ "$FILE_COUNT" -ne 1 ]; then
+    echo "ERROR: Expected exactly 1 log file, but found $FILE_COUNT."
     exit 1
 fi
+
+if [ ! -f "${FILES[0]}" ]; then
+    echo "ERROR: Tomcat log file not found at $LOG_FILE_PATTERN"
+    exit 1
+fi
+
+LOG_FILE=${FILES[0]}
 
 # 2. Count the number of matches
 # -E enables extended regex, -i makes it case-insensitive, -c counts the lines
