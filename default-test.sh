@@ -12,6 +12,19 @@ fi
 
 TOMCAT_PACKAGE="${1:-$TOMCAT_PACKAGE}"
 
+# 1. Load the OS variables
+. /etc/os-release
+
+# 2. Store the major version in a variable named RHEL_VER
+RHEL_VER=${VERSION_ID%%.*}
+
+echo "[stage]" > /etc/yum.repos.d/stage.repo
+echo "name=stage" >> /etc/yum.repos.d/stage.repo
+echo "baseurl=https://rhsm-pulp.corp.stage.redhat.com/content/dist/rhel${RHEL_VER}/${RHEL_VER}/x86_64/appstream/os/" >> /etc/yum.repos.d/stage.repo
+echo "enabled=1" >> /etc/yum.repos.d/stage.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/stage.repo
+
+dnf update
 dnf install -y ${TOMCAT_PACKAGE}
 
 mkdir -p /usr/share/tomcat/webapps/ROOT
