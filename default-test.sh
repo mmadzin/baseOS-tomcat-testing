@@ -4,13 +4,14 @@
 
 TOMCAT_PACKAGE="tomcat"
 
-# If tomcat package name is different than "tomcat" e.g. "tomcat9"
-if [[ -n "$1" && "$1" != "tomcat9" ]]; then
-    echo "Error: Invalid option '$1'. Expected 'tomcat9'." >&2
-    exit 1
-fi
-
-TOMCAT_PACKAGE="${1:-$TOMCAT_PACKAGE}"
+while getopts ":p:s:" option; do
+    case "${option}" in
+        p) TOMCAT_PACKAGE="${OPTARG}" ;;
+        s) STREAM="${OPTARG}" ;;
+        :) echo "Error: -${OPTARG} requires an argument." >&2; exit 1 ;;
+        *) echo "Error: Invalid option -${OPTARG}." >&2; exit 1 ;;
+    esac
+done
 
 # 1. Load the OS variables
 . /etc/os-release
@@ -18,9 +19,30 @@ TOMCAT_PACKAGE="${1:-$TOMCAT_PACKAGE}"
 # 2. Store the major version in a variable named RHEL_VER
 RHEL_VER=${VERSION_ID%%.*}
 
+URL="https://rhsm-pulp.corp.stage.redhat.com/content"
+DIST="dist"
+
+if [[ "$STREAM" =~ "EUS" ]]; then
+        DIST="eus"
+fi
+
+if [[ "$STREAM" =~ "E4S" ]]; then
+        DIST="e4s"
+fi
+
+URL="${URL}/${DIST}/"
+
+# Extract the versions from stream e.g. RHEL-9.6.0.Z.EUS
+CLEAN_VER="${STREAM#*-}" # Removes everything up to the first hyphen ("9.6.0.Z.EUS")
+
+MAJOR_VER=$(echo "$CLEAN_VER" | cut -d'.' -f1) # Extracts "9"
+MINOR_VER=$(echo "$CLEAN_VER" | cut -d'.' -f1-2) # Extracts "9.6"
+
+URL="${URL}rhel${MAJOR_VER}/${MINOR_VER}/x86_64/appstream/os/"
+
 echo "[stage]" > /etc/yum.repos.d/stage.repo
 echo "name=stage" >> /etc/yum.repos.d/stage.repo
-echo "baseurl=https://rhsm-pulp.corp.stage.redhat.com/content/dist/rhel${RHEL_VER}/${RHEL_VER}/x86_64/appstream/os/" >> /etc/yum.repos.d/stage.repo
+echo "baseurl=${URL}" >> /etc/yum.repos.d/stage.repo
 echo "enabled=1" >> /etc/yum.repos.d/stage.repo
 echo "gpgcheck=0" >> /etc/yum.repos.d/stage.repo
 
