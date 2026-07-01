@@ -110,7 +110,37 @@ wget ${TOMCAT_LINK} -O tomcat.rpm
 
 rpm2cpio tomcat.rpm | cpio -idmv
 
-tar xvzf apache-tomcat-*-src.tar.gz
+tar_found=false
+zip_found=false
+
+# 1. Check for the tar.gz file
+for file in apache-tomcat-*-src.tar.gz; do
+    if [ -f "$file" ]; then
+        echo "Found tarball: $file. Extracting..."
+        tar -xzvf "$file"
+        tar_found=true
+        break # Exit the loop after finding and extracting the first match
+    fi
+done
+
+# 2. If no tarball was found, check for the zip file
+if [ "$tar_found" = false ]; then
+    for file in tomcat-*-src.zip; do
+        if [ -f "$file" ]; then
+            echo "Tarball not found, but found zip file: $file. Unzipping..."
+            unzip "$file"
+            zip_found=true
+            break # Exit the loop after finding and unzipping the first match
+        fi
+    done
+fi
+
+# 3. If neither was found, report an error
+if [ "$tar_found" = false ] && [ "$zip_found" = false ]; then
+    echo "Error: Neither apache-tomcat-*-src.tar.gz nor tomcat-*-src.zip was found."
+    exit 1
+fi
+
 cd apache-tomcat-*-src
 
 if [[ -f "../tomcat.spec" ]]; then
