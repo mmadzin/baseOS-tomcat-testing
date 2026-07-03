@@ -32,13 +32,17 @@ fi
 
 URL="${URL}/${DIST}/"
 
-# Extract the versions from stream e.g. RHEL-9.6.0.Z.EUS
-CLEAN_VER="${STREAM#*-}" # Removes everything up to the first hyphen ("9.6.0.Z.EUS")
+if [ -z "$STREAM" ]; then
+        URL="${URL}rhel${RHEL_VER}/${RHEL_VER}/x86_64/appstream/os/"
+else
+        # Extract the versions from stream e.g. RHEL-9.6.0.Z.EUS
+        CLEAN_VER="${STREAM#*-}" # Removes everything up to the first hyphen ("9.6.0.Z.EUS")
 
-MAJOR_VER=$(echo "$CLEAN_VER" | cut -d'.' -f1) # Extracts "9"
-MINOR_VER=$(echo "$CLEAN_VER" | cut -d'.' -f1-2) # Extracts "9.6"
+        MAJOR_VER=$(echo "$CLEAN_VER" | cut -d'.' -f1) # Extracts "9"
+        MINOR_VER=$(echo "$CLEAN_VER" | cut -d'.' -f1-2) # Extracts "9.6"
 
-URL="${URL}rhel${MAJOR_VER}/${MINOR_VER}/x86_64/appstream/os/"
+        URL="${URL}rhel${MAJOR_VER}/${MINOR_VER}/x86_64/appstream/os/"
+fi
 
 echo "[stage]" > /etc/yum.repos.d/stage.repo
 echo "name=stage" >> /etc/yum.repos.d/stage.repo
