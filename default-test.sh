@@ -61,7 +61,7 @@ echo "baseurl=${URL}" >> /etc/yum.repos.d/stage.repo
 echo "enabled=1" >> /etc/yum.repos.d/stage.repo
 echo "gpgcheck=0" >> /etc/yum.repos.d/stage.repo
 
-dnf update
+dnf update -y
 dnf install -y ${TOMCAT_PACKAGE}
 
 mkdir -p /usr/share/tomcat/webapps/ROOT
