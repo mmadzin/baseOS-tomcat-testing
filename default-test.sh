@@ -4,10 +4,21 @@
 
 TOMCAT_PACKAGE="tomcat"
 
-while getopts ":p:s:" option; do
+usage() {
+    echo "Usage: $(basename "$0") [-p PACKAGE] [-s STREAM] [-h]"
+    echo ""
+    echo "Options:"
+    echo "  -p PACKAGE   Tomcat package name to install (default: tomcat)"
+    echo "  -s STREAM    RHEL stream (e.g. RHEL-9.6.0.Z.EUS, RHEL-9.6.0.Z.E4S)"
+    echo "  -h           Show this help message and exit"
+    exit 0
+}
+
+while getopts ":p:s:h" option; do
     case "${option}" in
         p) TOMCAT_PACKAGE="${OPTARG}" ;;
         s) STREAM="${OPTARG}" ;;
+        h) usage ;;
         :) echo "Error: -${OPTARG} requires an argument." >&2; exit 1 ;;
         *) echo "Error: Invalid option -${OPTARG}." >&2; exit 1 ;;
     esac
@@ -26,7 +37,7 @@ if [[ "$STREAM" =~ "EUS" ]]; then
         DIST="eus"
 fi
 
-if [[ "$STREAM" =~ "E4S" ]]; then
+if [[ "$STREAM" =~ "E4S" ]] || [[ "$STREAM" =~ "E2S" ]]; then
         DIST="e4s"
 fi
 
