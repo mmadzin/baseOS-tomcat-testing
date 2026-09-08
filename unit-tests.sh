@@ -102,7 +102,7 @@ fi
 
 mkdir tomcat
 cd tomcat
-dnf install -y ant ant-junit java-25-openjdk-devel patch
+dnf install -y ant ant-junit java-21-openjdk-devel patch
 
 # Download source code
 echo "Downloading ${TOMCAT_LINK}"
