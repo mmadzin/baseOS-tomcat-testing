@@ -40,8 +40,8 @@ apply_spec_patches() {
         if [[ "$line" =~ ^%patch[[:space:]] ]]; then
 
             # Extract the Patch ID (-P flag)
-            if [[ "$line" =~ -P[[:space:]]*([0-9]+) ]]; then
-                patch_id="${BASH_REMATCH[1]}"
+            if [[ "$line" =~ ^%patch[[:space:]]*(-P[[:space:]]*)?([0-9]+) ]]; then
+                patch_id="${BASH_REMATCH[2]}"
             else
                 continue
             fi
