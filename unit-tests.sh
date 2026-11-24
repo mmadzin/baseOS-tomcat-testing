@@ -77,14 +77,23 @@ apply_spec_patches() {
 }
 
 if [ "$#" -ne 1 ]; then
-    echo "Error: Source package URL is required."
-    echo "Usage: $0 <tomcat-src-rpm-link>"
+    echo "Error: Source package URL or local RPM path is required."
+    echo "Usage: $0 <tomcat-src-rpm-link-or-local-path>"
     exit 1
 fi
 
 TOMCAT_LINK=$1
 FILE_NAME="${TOMCAT_LINK##*/}"
 NAME="tomcat"
+
+if [[ "$TOMCAT_LINK" =~ ^(https?|ftp):// ]]; then
+    IS_LOCAL_FILE=false
+elif [[ -f "$TOMCAT_LINK" ]]; then
+    IS_LOCAL_FILE=true
+else
+    echo "Error: '$TOMCAT_LINK' is neither a valid URL nor an existing local file."
+    exit 1
+fi
 
 echo "FILE_NAME: $FILE_NAME" 
 
@@ -100,13 +109,22 @@ else
     exit 1
 fi
 
+if [ "$IS_LOCAL_FILE" = true ]; then
+    TOMCAT_LINK="$(realpath "$TOMCAT_LINK")"
+fi
+
 mkdir tomcat
 cd tomcat
 dnf install -y ant ant-junit java-21-openjdk-devel patch wget
 
-# Download source code
-echo "Downloading ${TOMCAT_LINK}"
-wget ${TOMCAT_LINK} -O tomcat.rpm
+# Obtain source package
+if [ "$IS_LOCAL_FILE" = true ]; then
+    echo "Using local RPM file: ${TOMCAT_LINK}"
+    cp "$TOMCAT_LINK" tomcat.rpm
+else
+    echo "Downloading ${TOMCAT_LINK}"
+    wget "${TOMCAT_LINK}" -O tomcat.rpm
+fi
 
 rpm2cpio tomcat.rpm | cpio -idmv
 
